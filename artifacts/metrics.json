@@ -1,0 +1,21 @@
+{
+  "is_demo_data": false,
+  "n_train": 22821,
+  "n_test": 5706,
+  "fraud_rate_pct": 0.17527254881340484,
+  "accuracy": 0.9905362776025236,
+  "precision": 0.15625,
+  "recall": 1.0,
+  "f1": 0.2702702702702703,
+  "roc_auc": 1.0,
+  "confusion_matrix": [
+    [
+      5642,
+      54
+    ],
+    [
+      0,
+      10
+    ]
+  ]
+}

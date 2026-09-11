@@ -1,0 +1,8 @@
+@"
+.venv/
+__pycache__/
+*.pyc
+.env
+.streamlit/secrets.toml
+.DS_Store
+"@ | Out-File -Encoding utf8 .gitignore
