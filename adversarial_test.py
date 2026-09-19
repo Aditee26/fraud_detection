@@ -26,8 +26,12 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.class_weight import compute_class_weight
-
-from train_model import build_model, load_data, ARTIFACT_DIR, SEED
+from train_model import (
+    build_model,
+    load_data,
+    ARTIFACT_DIR,
+    SEED
+)
 
 EPSILON = 0.3  # FGSM perturbation budget (in scaled feature space)
 
@@ -53,7 +57,7 @@ def evaluate(model, X, y, threshold=0.5):
 
 
 def main():
-    df, is_demo = load_data()
+    df = load_data()
     X = df.drop(columns=["Class"]).values
     y = df["Class"].values
 

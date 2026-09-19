@@ -1,16 +1,16 @@
 {
   "epsilon": 0.3,
   "normal_model": {
-    "clean_accuracy": 0.9905,
-    "adversarial_accuracy": 0.846
+    "clean_accuracy": 0.97,
+    "adversarial_accuracy": 0.6329
   },
   "adversarially_trained_model": {
-    "clean_accuracy": 0.9988,
-    "adversarial_accuracy": 0.9497
+    "clean_accuracy": 0.9866,
+    "adversarial_accuracy": 0.7013
   },
   "single_transaction_demo": {
-    "fraud_probability_normal_model_clean_input": 0.9852,
-    "fraud_probability_normal_model_after_fgsm": 0.9661,
-    "fraud_probability_robust_model_after_fgsm": 0.9784
+    "fraud_probability_normal_model_clean_input": 1.0,
+    "fraud_probability_normal_model_after_fgsm": 1.0,
+    "fraud_probability_robust_model_after_fgsm": 0.9947
   }
 }

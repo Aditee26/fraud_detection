@@ -1,0 +1,24 @@
+[
+  {
+    "index": 0,
+    "transaction_id": "GENESIS",
+    "actual_class": -1,
+    "decision": "GENESIS",
+    "risk_score": 0.0,
+    "model_version": "system",
+    "timestamp": "2026-09-12T04:20:20.190272+00:00",
+    "previous_hash": "0",
+    "hash": "37ff957dae2b251600eaffb88aa97f417b473e58ba0e7189749d9324224ab9cb"
+  },
+  {
+    "index": 1,
+    "transaction_id": "TXN-62047",
+    "actual_class": -1,
+    "decision": "LEGITIMATE",
+    "risk_score": 10.1348,
+    "model_version": "fraud_model.keras",
+    "timestamp": "2026-09-12T04:22:00.678950+00:00",
+    "previous_hash": "37ff957dae2b251600eaffb88aa97f417b473e58ba0e7189749d9324224ab9cb",
+    "hash": "9421b2f4798e1f9ffd273d11da26ea47012fe22e332aa2d05a6246f75b611f09"
+  }
+]
