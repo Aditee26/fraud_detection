@@ -1,0 +1,159 @@
+{
+  "phase": "1 - model comparison",
+  "dataset": {
+    "path": "data/creditcard.csv",
+    "total_rows": 284807,
+    "fraud_rows": 492,
+    "fraud_rate_pct": 0.1727485630620034
+  },
+  "protocol": {
+    "split": "stratified random",
+    "test_size": 0.2,
+    "random_state": 42,
+    "decision_threshold": 0.5,
+    "scaling": "StandardScaler fitted on training rows only",
+    "imbalance_handling": "class_weight='balanced' for sklearn models, scale_pos_weight for XGBoost, class weights for the pre-trained ANN. No SMOTE.",
+    "split_matches_saved_scaler": true,
+    "train_rows": 227845,
+    "test_rows": 56962,
+    "test_fraud_rows": 98
+  },
+  "note": "A random split is used here to stay consistent with train_model.py. The research paper recommends a temporal split; that is a documented limitation, not an oversight.",
+  "results": [
+    {
+      "model": "Logistic Regression",
+      "accuracy": 0.9755275446789088,
+      "precision": 0.06097560975609756,
+      "recall": 0.9183673469387755,
+      "f1": 0.11435832274459974,
+      "roc_auc": 0.9720877166285761,
+      "pr_auc": 0.7289247463947675,
+      "mcc": 0.2332014073328229,
+      "true_negative": 55478,
+      "false_positive": 1386,
+      "false_negative": 8,
+      "true_positive": 90,
+      "alerts_raised": 1476,
+      "confusion_matrix": [
+        [
+          55478,
+          1386
+        ],
+        [
+          8,
+          90
+        ]
+      ],
+      "threshold": 0.5,
+      "train_seconds": 0.97
+    },
+    {
+      "model": "Decision Tree",
+      "accuracy": 0.9802851023489344,
+      "precision": 0.06968933669185558,
+      "recall": 0.8469387755102041,
+      "f1": 0.1287820015515904,
+      "roc_auc": 0.9184736693636375,
+      "pr_auc": 0.6491083578623708,
+      "mcc": 0.23967091861697762,
+      "true_negative": 55756,
+      "false_positive": 1108,
+      "false_negative": 15,
+      "true_positive": 83,
+      "alerts_raised": 1191,
+      "confusion_matrix": [
+        [
+          55756,
+          1108
+        ],
+        [
+          15,
+          83
+        ]
+      ],
+      "threshold": 0.5,
+      "train_seconds": 13.93
+    },
+    {
+      "model": "Random Forest",
+      "accuracy": 0.9995084442259752,
+      "precision": 0.8888888888888888,
+      "recall": 0.8163265306122449,
+      "f1": 0.851063829787234,
+      "roc_auc": 0.9661761000826893,
+      "pr_auc": 0.8479920751409606,
+      "mcc": 0.8515920105996265,
+      "true_negative": 56854,
+      "false_positive": 10,
+      "false_negative": 18,
+      "true_positive": 80,
+      "alerts_raised": 90,
+      "confusion_matrix": [
+        [
+          56854,
+          10
+        ],
+        [
+          18,
+          80
+        ]
+      ],
+      "threshold": 0.5,
+      "train_seconds": 24.57
+    },
+    {
+      "model": "XGBoost",
+      "accuracy": 0.9995084442259752,
+      "precision": 0.8723404255319149,
+      "recall": 0.8367346938775511,
+      "f1": 0.8541666666666666,
+      "roc_auc": 0.978575986528545,
+      "pr_auc": 0.8757074478385722,
+      "mcc": 0.8541065802142919,
+      "true_negative": 56852,
+      "false_positive": 12,
+      "false_negative": 16,
+      "true_positive": 82,
+      "alerts_raised": 94,
+      "confusion_matrix": [
+        [
+          56852,
+          12
+        ],
+        [
+          16,
+          82
+        ]
+      ],
+      "threshold": 0.5,
+      "train_seconds": 10.17
+    },
+    {
+      "model": "ANN (existing)",
+      "accuracy": 0.9762297672132298,
+      "precision": 0.06267409470752089,
+      "recall": 0.9183673469387755,
+      "f1": 0.11734028683181226,
+      "roc_auc": 0.9732477526041368,
+      "pr_auc": 0.7027550609336123,
+      "mcc": 0.23652781916643403,
+      "true_negative": 55518,
+      "false_positive": 1346,
+      "false_negative": 8,
+      "true_positive": 90,
+      "alerts_raised": 1436,
+      "confusion_matrix": [
+        [
+          55518,
+          1346
+        ],
+        [
+          8,
+          90
+        ]
+      ],
+      "threshold": 0.5,
+      "train_seconds": 0.0
+    }
+  ]
+}

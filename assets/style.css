@@ -1,0 +1,260 @@
+/* ============================================================
+   style.css
+   ---------
+   Visual theme for the Fraud Detection Streamlit dashboard.
+   Kept in its own file so app.py stays readable -- loaded via
+   load_css() near the top of app.py.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@600;700&display=swap');
+
+:root {
+    --bg:           #F4F6F9;
+    --panel:        #FFFFFF;
+    --border:       #E1E5EB;
+    --navy:         #0F2A4A;
+    --navy-dark:    #0A1D33;
+    --blue:         #1F5FBF;
+    --blue-soft:    #EAF1FB;
+    --green:        #1E8E5A;
+    --green-soft:   #E9F7F0;
+    --amber:        #B4790A;
+    --amber-soft:   #FBF1DE;
+    --text-main:    #1C2530;
+    --text-dim:     #63707F;
+}
+
+html, body, [class*="css"] {
+    font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif !important;
+}
+
+/* ---- overall background ---- */
+.stApp {
+    background-color: var(--bg) !important;
+}
+
+/* Trim Streamlit's large default top padding so the header sits closer to the tab bar */
+.block-container {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+    max-width: 1320px !important;
+}
+
+/* ---- header banner: clean navy bar ---- */
+.fd-hero {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+    border-radius: 10px;
+    padding: 28px 32px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 14px rgba(15,42,74,0.18);
+}
+.fd-hero h1 {
+    font-family: 'Lora', serif !important;
+    font-weight: 700 !important;
+    font-size: 1.8rem !important;
+    letter-spacing: 0.01em;
+    margin: 0 0 6px 0 !important;
+    color: #FFFFFF !important;
+}
+.fd-hero p {
+    color: #B9C9DE !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.86rem;
+    font-weight: 500;
+    margin: 0;
+    letter-spacing: 0.02em;
+}
+
+.fd-badge-row {
+    margin-top: 14px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.fd-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.18);
+    color: #DCE6F2;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.74rem;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+}
+.fd-badge b { color: #FFFFFF; font-weight: 700; }
+
+/* ---- status banners ---- */
+div[data-testid="stAlert"] {
+    border-radius: 8px !important;
+    font-family: 'Inter', sans-serif !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+
+/* ---- tabs: clean underline style, smaller so 6 tabs fit on one line ---- */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 2px;
+    background: transparent;
+    padding: 0;
+    border-bottom: 2px solid var(--border);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+.stTabs [data-baseweb="tab"] {
+    height: 40px;
+    border-radius: 8px 8px 0 0 !important;
+    padding: 0 12px;
+    color: var(--text-dim) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600;
+    font-size: 0.82rem;
+    background: transparent !important;
+    border: none !important;
+    white-space: nowrap;
+}
+.stTabs [aria-selected="true"] {
+    color: var(--blue) !important;
+    background: var(--blue-soft) !important;
+    box-shadow: inset 0 -2px 0 var(--blue) !important;
+}
+
+/* ---- section headings ---- */
+h2, h3 {
+    font-family: 'Lora', serif !important;
+    font-weight: 700 !important;
+    color: var(--navy) !important;
+    letter-spacing: 0;
+}
+h2 { font-size: 1.35rem !important; margin-top: 0.3rem !important; }
+h3 { font-size: 1.08rem !important; margin-top: 1rem !important; color: var(--text-main) !important; }
+
+/* ---- metric cards ---- */
+div[data-testid="stMetric"] {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--blue);
+    border-radius: 8px;
+    padding: 12px 16px 8px 14px;
+    box-shadow: 0 1px 3px rgba(15,42,74,0.06);
+}
+div[data-testid="stMetricLabel"] {
+    color: var(--text-dim) !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.70rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+div[data-testid="stMetricValue"] {
+    color: var(--navy) !important;
+    font-family: 'Lora', serif !important;
+    font-weight: 700 !important;
+    font-size: 1.5rem !important;
+}
+
+/* ---- buttons ---- */
+.stButton > button {
+    border-radius: 6px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 600 !important;
+    background: var(--blue) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    box-shadow: 0 1px 3px rgba(31,95,191,0.3);
+    transition: all 0.15s ease;
+}
+.stButton > button[kind="primary"] { background: var(--navy) !important; }
+.stButton > button:hover {
+    background: var(--navy) !important;
+    box-shadow: 0 2px 6px rgba(15,42,74,0.35) !important;
+}
+
+/* ---- dataframes ---- */
+div[data-testid="stDataFrame"] {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif !important;
+}
+
+/* ---- plot images: bordered card, capped size (JS/HTML width also set per-call in app.py) ---- */
+div[data-testid="stImage"] {
+    display: flex;
+    justify-content: center;
+}
+div[data-testid="stImage"] img {
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 4px rgba(15,42,74,0.08);
+    background: var(--panel);
+}
+div[data-testid="stImage"] figcaption {
+    font-size: 0.76rem !important;
+    color: var(--text-dim) !important;
+    text-align: center;
+}
+
+/* ---- expander ---- */
+div[data-testid="stExpander"] {
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    background: var(--panel) !important;
+}
+
+/* ---- divider ---- */
+hr { border-color: var(--border) !important; }
+
+/* ---- code blocks ---- */
+.stCodeBlock, pre {
+    border-radius: 8px !important;
+    border: 1px solid var(--border) !important;
+}
+
+/* ---- general body text ---- */
+p, span, label, .stMarkdown { color: var(--text-main); }
+
+/* ---- FORCE LIGHT INPUT WIDGETS ----
+   Fixes the black/dark dropdowns & number boxes that appear when the
+   browser/Streamlit client is set to dark mode. These selectors target
+   Streamlit's native input components directly so they stay light and
+   match the rest of the theme regardless of client-side dark mode. */
+div[data-baseweb="select"] > div,
+div[data-baseweb="input"] > div,
+.stNumberInput input,
+.stTextInput input,
+.stSelectbox div[data-baseweb="select"],
+.stTextArea textarea {
+    background-color: var(--panel) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 6px !important;
+}
+div[data-baseweb="popover"] ul,
+div[data-baseweb="menu"] {
+    background-color: var(--panel) !important;
+    color: var(--text-main) !important;
+}
+div[data-baseweb="popover"] li:hover {
+    background-color: var(--blue-soft) !important;
+}
+.stNumberInput button {
+    background-color: var(--panel) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-main) !important;
+}
+label, .stCheckbox label, .stRadio label {
+    color: var(--text-main) !important;
+}
+
+/* ---- footer ---- */
+.fd-footer {
+    margin-top: 32px;
+    padding: 14px 0 6px 0;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    text-align: left;
+}
+.fd-footer b { color: var(--navy); }

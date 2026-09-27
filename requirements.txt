@@ -5,3 +5,5 @@ numpy>=1.26
 matplotlib>=3.8
 streamlit>=1.35
 shap>=0.45
+xgboost>=2.0
+joblib>=1.3

@@ -1,16 +1,36 @@
 {
-  "epsilon": 0.3,
+  "epsilon": 0.1,
   "normal_model": {
-    "clean_accuracy": 0.97,
-    "adversarial_accuracy": 0.6329
+    "clean": {
+      "accuracy": 0.9762297672132298,
+      "precision": 0.06267409470752089,
+      "recall": 0.9183673469387755,
+      "f1": 0.11734028683181226
+    },
+    "adversarial": {
+      "accuracy": 0.9375373055721358,
+      "precision": 0.0242024202420242,
+      "recall": 0.8979591836734694,
+      "f1": 0.04713444027852169
+    }
   },
   "adversarially_trained_model": {
-    "clean_accuracy": 0.9866,
-    "adversarial_accuracy": 0.7013
+    "clean": {
+      "accuracy": 0.9872371054387136,
+      "precision": 0.1093167701863354,
+      "recall": 0.8979591836734694,
+      "f1": 0.19490586932447398
+    },
+    "adversarial": {
+      "accuracy": 0.9675573189143639,
+      "precision": 0.04521829521829522,
+      "recall": 0.8877551020408163,
+      "f1": 0.08605341246290801
+    }
   },
   "single_transaction_demo": {
     "fraud_probability_normal_model_clean_input": 1.0,
     "fraud_probability_normal_model_after_fgsm": 1.0,
-    "fraud_probability_robust_model_after_fgsm": 0.9947
+    "fraud_probability_robust_model_after_fgsm": 0.9999
   }
 }

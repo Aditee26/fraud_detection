@@ -63,6 +63,46 @@ ADV_PATH = os.path.join(
     "adversarial_comparison.json"
 )
 
+MODEL_COMPARISON_JSON_PATH = os.path.join(
+    ARTIFACT_DIR,
+    "model_comparison.json"
+)
+
+MODEL_COMPARISON_PLOT_PATH = os.path.join(
+    ARTIFACT_DIR,
+    "model_comparison.png"
+)
+
+MODEL_COMPARISON_CM_PLOT_PATH = os.path.join(
+    ARTIFACT_DIR,
+    "model_comparison_confusion.png"
+)
+
+EXPLAIN_DIR = os.path.join(
+    ARTIFACT_DIR,
+    "explainability"
+)
+
+SHAP_SUMMARY_PATH = os.path.join(
+    EXPLAIN_DIR,
+    "shap_summary.png"
+)
+
+SHAP_BAR_PATH = os.path.join(
+    EXPLAIN_DIR,
+    "shap_bar.png"
+)
+
+SHAP_LOCAL_PATH = os.path.join(
+    EXPLAIN_DIR,
+    "shap_local.png"
+)
+
+SHAP_EXPLANATION_JSON_PATH = os.path.join(
+    EXPLAIN_DIR,
+    "explanation.json"
+)
+
 DATA_PATH = os.path.join(
     "data",
     "creditcard.csv"
@@ -75,8 +115,35 @@ DATA_PATH = os.path.join(
 
 st.set_page_config(
     page_title="Adversarially Robust Fraud Detection",
-    layout="wide"
+    page_icon="👾",
+    layout="wide",
+    initial_sidebar_state="collapsed",
 )
+
+
+# ============================================================
+# CUSTOM THEME (CSS ONLY -- no logic, no data changes)
+#
+# Streamlit's default look is plain gray boxes. This block re-skins
+# it with a dark banking/security palette, a proper heading font,
+# card-style metrics, pill-style tabs, and softer borders. Every
+# number, table and chart the app shows is completely unchanged --
+# this only changes how it LOOKS.
+# ============================================================
+
+def load_css(path: str) -> str:
+    """Read the external stylesheet and wrap it in a <style> tag."""
+    with open(path, "r", encoding="utf-8") as f:
+        return f"<style>\n{f.read()}\n</style>"
+
+
+def load_css(path: str) -> str:
+    """Read the external stylesheet and wrap it in a <style> tag."""
+    with open(path, "r", encoding="utf-8") as f:
+        return f"<style>\n{f.read()}\n</style>"
+
+
+st.markdown(load_css(os.path.join("assets", "style.css")), unsafe_allow_html=True)
 
 
 # ============================================================
@@ -270,12 +337,21 @@ artifacts = load_artifacts()
 # HEADER
 # ============================================================
 
-st.title(
-    "🏦 Adversarially Robust Fraud Detection in Banking"
-)
-
-st.caption(
-    "Machine Learning + Adversarial Testing + Blockchain Audit"
+st.markdown(
+    """
+    <div class="fd-hero">
+        <h1>Fraud Detection in Banking</h1>
+        <p>Machine Learning · Adversarial Robustness · Explainability · Blockchain Audit</p>
+        <div class="fd-badge-row">
+            <span class="fd-badge">📊 <b>284,807</b> Transactions</span>
+            <span class="fd-badge">🎯 <b>5</b> Models Compared</span>
+            <span class="fd-badge">🛡️ FGSM Adversarial Testing</span>
+            <span class="fd-badge">🔎 SHAP Explainability</span>
+            <span class="fd-badge">⛓️ Blockchain Audit Trail</span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
 
@@ -324,12 +400,14 @@ else:
    st.success(
     "✅ Model trained using the REAL Kaggle Credit Card Fraud Detection dataset."
 )
-tab1, tab2, tab3, tab4 = st.tabs(
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
 [
 "🔍 Fraud Detection",
 "📊 Model Performance",
 "🛡️ Adversarial Testing",
 "⛓️ Blockchain Audit",
+"⚖️ Model Comparison",
+"🔎 XGBoost Explainability",
 ]
 )
 
@@ -614,6 +692,9 @@ with tab1:
 
             "probability":
                 prob,
+
+            "features":
+                ordered_values,
         }
 
         st.info(
@@ -777,15 +858,43 @@ with tab2:
         "### Training Result"
     )
 
-    st.write(
-        "The neural network was trained for 15 epochs using the real Kaggle "
-        "Credit Card Fraud Detection dataset."
-    )
+    training_info = m.get("training", {})
+    validation_info = m.get("validation", {})
 
-    st.write(
-        "The final training log reached approximately "
-        "**99.25% validation accuracy** and **0.9972 validation ROC-AUC**."
-    )
+    epochs_completed = training_info.get("epochs_completed")
+    final_val_accuracy = validation_info.get("final_val_accuracy")
+    best_val_auc = validation_info.get("best_val_auc")
+
+    if epochs_completed is not None:
+
+        st.write(
+            f"The neural network trained for **{epochs_completed} epochs** "
+            f"(early stopping monitored validation ROC-AUC) using the real "
+            f"Kaggle Credit Card Fraud Detection dataset."
+        )
+
+    else:
+
+        st.write(
+            "Training epoch count is not available in metrics.json."
+        )
+
+    if final_val_accuracy is not None and best_val_auc is not None:
+
+        st.write(
+            f"The final training run reached "
+            f"**{final_val_accuracy * 100:.2f}% validation accuracy** and "
+            f"**{best_val_auc:.4f} best validation ROC-AUC**. These numbers "
+            f"are read directly from artifacts/metrics.json, so they always "
+            f"match whatever train_model.py last produced."
+        )
+
+    else:
+
+        st.write(
+            "Validation accuracy / ROC-AUC are not available in "
+            "metrics.json."
+        )
 
     # --------------------------------------------------------
     # IMAGES
@@ -981,7 +1090,7 @@ with tab3:
             st.image(
                 img_path,
                 caption="Normal vs. Adversarially Trained Model",
-                width="stretch"
+                width=560
             )
 
         # ----------------------------------------------------
@@ -1112,22 +1221,38 @@ with tab3:
                     "last_txn"
                 ]
 
-                # Use the transaction currently stored in session.
-                # If exact feature values are unavailable, use a random
-                # real dataset transaction for the prototype explanation.
+                # Explain the transaction the user actually analyzed in
+                # the Fraud Detection tab. Older sessions saved before
+                # this fix will not have "features" stored -- fall back
+                # to a random real row ONLY in that case, and say so.
+                if "features" in last:
 
-                sample_idx = np.random.choice(
-                    len(df),
-                    size=1
-                )[0]
+                    row = np.array(
+                        last["features"],
+                        dtype=float
+                    )
 
-                row = (
-                    df.iloc[
-                        sample_idx
-                    ][feature_cols]
-                    .values
-                    .astype(float)
-                )
+                else:
+
+                    st.warning(
+                        "This transaction was analyzed before the "
+                        "explainability fix. Showing a random dataset "
+                        "row instead -- re-analyze a transaction in the "
+                        "Fraud Detection tab for an accurate explanation."
+                    )
+
+                    sample_idx = np.random.choice(
+                        len(df),
+                        size=1
+                    )[0]
+
+                    row = (
+                        df.iloc[
+                            sample_idx
+                        ][feature_cols]
+                        .values
+                        .astype(float)
+                    )
 
                 x_scaled = scale_row(
                     row,
@@ -1680,3 +1805,425 @@ with tab4:
             "Analyze a transaction and record its decision "
             "to create the first audit block."
         )
+
+# ============================================================
+# TAB 5
+# MODEL COMPARISON (Phase 1)
+# ============================================================
+
+with tab5:
+
+    st.subheader(
+        "⚖️ Model Comparison"
+    )
+
+    st.caption(
+        "Logistic Regression, Decision Tree, Random Forest and XGBoost, "
+        "trained and scored on the exact same test set as the ANN above. "
+        "No model here is retrained by the dashboard -- these numbers "
+        "come from running  python model_comparison.py  and are read "
+        "directly from artifacts/model_comparison.json."
+    )
+
+    if not os.path.exists(MODEL_COMPARISON_JSON_PATH):
+
+        st.warning(
+            "No comparison results found yet. Run this from the project "
+            "folder, then reload this page:"
+        )
+
+        st.code(
+            "python model_comparison.py",
+            language="text"
+        )
+
+    else:
+
+        with open(
+            MODEL_COMPARISON_JSON_PATH,
+            "r",
+            encoding="utf-8"
+        ) as f:
+            comparison = json.load(f)
+
+        results = comparison.get("results", [])
+
+        protocol = comparison.get("protocol", {})
+
+        # ------------------------------------------------------
+        # PROTOCOL SUMMARY
+        # ------------------------------------------------------
+
+        st.markdown("### Evaluation Protocol")
+
+        p1, p2, p3 = st.columns(3)
+
+        with p1:
+            st.metric(
+                "Test Transactions",
+                f"{protocol.get('test_rows', 'N/A'):,}"
+                if isinstance(protocol.get("test_rows"), int)
+                else "N/A"
+            )
+
+        with p2:
+            st.metric(
+                "Fraud in Test Set",
+                protocol.get("test_fraud_rows", "N/A")
+            )
+
+        with p3:
+            st.metric(
+                "Decision Threshold",
+                protocol.get("decision_threshold", "N/A")
+            )
+
+        split_ok = protocol.get("split_matches_saved_scaler")
+
+        if split_ok is True:
+
+            st.success(
+                "✅ Verified: this comparison uses the same train/test "
+                "split as the ANN, so the ANN row below did not see "
+                "these test rows during training."
+            )
+
+        elif split_ok is False:
+
+            st.error(
+                "⚠️ The split used for this comparison did NOT match "
+                "artifacts/scaler.npz when it was generated. Re-run "
+                "train_model.py then model_comparison.py before "
+                "trusting the ANN row below."
+            )
+
+        # ------------------------------------------------------
+        # RESULTS TABLE
+        # ------------------------------------------------------
+
+        st.markdown("### Results Table")
+
+        st.caption(
+            "Accuracy is shown for completeness only. With fraud at "
+            "roughly 0.17% of transactions, a model that always predicts "
+            "'legitimate' would already score about 99.8% accuracy -- "
+            "Precision, Recall, F1, PR-AUC and MCC are what actually "
+            "separate these models."
+        )
+
+        if results:
+
+            table_rows = []
+
+            for r in results:
+
+                table_rows.append(
+                    {
+                        "Model": r.get("model"),
+                        "Accuracy": format_percent(r.get("accuracy")),
+                        "Precision": format_percent(r.get("precision")),
+                        "Recall": format_percent(r.get("recall")),
+                        "F1": format_number(r.get("f1")),
+                        "ROC-AUC": format_number(r.get("roc_auc")),
+                        "PR-AUC": format_number(r.get("pr_auc")),
+                        "MCC": format_number(r.get("mcc")),
+                        "Fraud Caught": (
+                            f"{r.get('true_positive', 'N/A')}"
+                        ),
+                        "False Alarms": (
+                            f"{r.get('false_positive', 'N/A'):,}"
+                            if isinstance(r.get("false_positive"), int)
+                            else "N/A"
+                        ),
+                        "Fraud Missed": (
+                            f"{r.get('false_negative', 'N/A')}"
+                        ),
+                    }
+                )
+
+            comparison_df = pd.DataFrame(table_rows)
+
+            st.dataframe(
+                comparison_df,
+                width="stretch",
+                hide_index=True
+            )
+
+            # --------------------------------------------------
+            # BEST-BY-METRIC CALLOUTS
+            #
+            # These are factual ("highest X was model Y"), never a
+            # single "best overall" claim -- the trade-off between
+            # precision and recall is a business decision, not
+            # something this dashboard should decide for the user.
+            # --------------------------------------------------
+
+            def best_by(key):
+                valid = [r for r in results if r.get(key) is not None]
+                if not valid:
+                    return None
+                return max(valid, key=lambda r: r[key])
+
+            st.markdown("### Reading the Results")
+
+            b1, b2, b3, b4 = st.columns(4)
+
+            best_recall = best_by("recall")
+            best_precision = best_by("precision")
+            best_pr_auc = best_by("pr_auc")
+            best_mcc = best_by("mcc")
+
+            with b1:
+                if best_recall:
+                    st.metric(
+                        "Highest Recall",
+                        best_recall["model"],
+                        format_percent(best_recall["recall"])
+                    )
+
+            with b2:
+                if best_precision:
+                    st.metric(
+                        "Highest Precision",
+                        best_precision["model"],
+                        format_percent(best_precision["precision"])
+                    )
+
+            with b3:
+                if best_pr_auc:
+                    st.metric(
+                        "Highest PR-AUC",
+                        best_pr_auc["model"],
+                        format_number(best_pr_auc["pr_auc"])
+                    )
+
+            with b4:
+                if best_mcc:
+                    st.metric(
+                        "Highest MCC",
+                        best_mcc["model"],
+                        format_number(best_mcc["mcc"])
+                    )
+
+            st.info(
+                "Recall and precision trade against each other: the "
+                "model that catches the most fraud (highest recall) is "
+                "not the model with the fewest false alarms (highest "
+                "precision). Which trade-off is right depends on the "
+                "relative cost of a missed fraud versus an analyst "
+                "reviewing a false alarm -- a threshold/cost analysis "
+                "(a later phase of this project) turns that judgement "
+                "call into a number instead of a guess."
+            )
+
+        # ------------------------------------------------------
+        # PLOTS
+        # ------------------------------------------------------
+
+        st.markdown("### Charts")
+
+        chart_cols = st.columns(2)
+
+        with chart_cols[0]:
+
+            if os.path.exists(MODEL_COMPARISON_PLOT_PATH):
+
+                st.image(
+                    MODEL_COMPARISON_PLOT_PATH,
+                    caption="Metric-by-metric comparison",
+                    width=560
+                )
+
+        with chart_cols[1]:
+
+            if os.path.exists(MODEL_COMPARISON_CM_PLOT_PATH):
+
+                st.image(
+                    MODEL_COMPARISON_CM_PLOT_PATH,
+                    caption="Confusion matrix per model",
+                    width=560
+                )
+
+        st.caption(
+            "To refresh these results after retraining any model, "
+            "run  python model_comparison.py  again and reload this page."
+        )
+
+# ============================================================
+# TAB 6
+# XGBOOST EXPLAINABILITY (Phase 3 - SHAP)
+# ============================================================
+
+with tab6:
+
+    st.subheader(
+        "🔎 XGBoost Explainability (SHAP)"
+    )
+
+    st.caption(
+        "SHAP breaks down the XGBoost model's fraud score into a "
+        "per-feature contribution: which features pushed a prediction "
+        "toward fraud, which pushed it toward legitimate, and by how "
+        "much. Generated by  python explainability.py  -- not "
+        "recomputed live by the dashboard."
+    )
+
+    st.warning(
+        "SHAP values explain what influenced the MODEL'S prediction. "
+        "They are not proof that a transaction is fraudulent."
+    )
+
+    if not os.path.exists(SHAP_EXPLANATION_JSON_PATH):
+
+        st.warning(
+            "No explainability results found yet. Run this from the "
+            "project folder (requires artifacts/xgboost_model.json, "
+            "produced by model_comparison.py), then reload this page:"
+        )
+
+        st.code(
+            "python model_comparison.py\n"
+            "python explainability.py",
+            language="text"
+        )
+
+    else:
+
+        with open(
+            SHAP_EXPLANATION_JSON_PATH,
+            "r",
+            encoding="utf-8"
+        ) as f:
+            explanation = json.load(f)
+
+        # ------------------------------------------------------
+        # GLOBAL: TOP FEATURES
+        # ------------------------------------------------------
+
+        st.markdown("### Global Feature Importance")
+
+        st.write(
+            "Averaged across a sample of test transactions, ranked by "
+            "how much each feature typically moves the model's "
+            "prediction (in either direction)."
+        )
+
+        global_info = explanation.get("global_explanation", {})
+
+        top_features = global_info.get(
+            "top_features_by_mean_abs_shap", {}
+        )
+
+        if top_features:
+
+            top_df = pd.DataFrame(
+                [
+                    {"Feature": k, "Mean |SHAP value|": round(v, 4)}
+                    for k, v in top_features.items()
+                ]
+            )
+
+            st.dataframe(
+                top_df,
+                width="stretch",
+                hide_index=True
+            )
+
+        chart_cols = st.columns(2)
+
+        with chart_cols[0]:
+
+            if os.path.exists(SHAP_BAR_PATH):
+
+                st.image(
+                    SHAP_BAR_PATH,
+                    caption="Global feature importance",
+                    width=560
+                )
+
+        with chart_cols[1]:
+
+            if os.path.exists(SHAP_SUMMARY_PATH):
+
+                st.image(
+                    SHAP_SUMMARY_PATH,
+                    caption=(
+                        "SHAP summary -- color shows the feature's "
+                        "actual value (red = high, blue = low), "
+                        "position shows its impact"
+                    ),
+                    width=560
+                )
+
+        # ------------------------------------------------------
+        # LOCAL: ONE SPECIFIC TRANSACTION
+        # ------------------------------------------------------
+
+        st.divider()
+
+        st.markdown("### Local Explanation — One Real Fraud Transaction")
+
+        local_info = explanation.get("local_explanation_example", {})
+
+        prob = local_info.get("model_probability")
+
+        if prob is not None:
+
+            st.metric(
+                "Model's Fraud Probability for This Transaction",
+                f"{prob * 100:.2f}%"
+            )
+
+        contributions = local_info.get("top_contributing_features", [])
+
+        if contributions:
+
+            contrib_df = pd.DataFrame(
+                [
+                    {
+                        "Feature": c["feature"],
+                        "Scaled Value": round(c["scaled_value"], 3),
+                        "SHAP Value": round(c["shap_value"], 4),
+                        "Direction": c["direction"],
+                    }
+                    for c in contributions
+                ]
+            )
+
+            st.dataframe(
+                contrib_df,
+                width="stretch",
+                hide_index=True
+            )
+
+        if os.path.exists(SHAP_LOCAL_PATH):
+
+            st.image(
+                SHAP_LOCAL_PATH,
+                caption=(
+                    "Red bars pushed this transaction's score toward "
+                    "fraud. Blue bars pushed it toward legitimate."
+                ),
+                width=560
+            )
+
+        st.caption(
+            "To explain a different transaction, edit the selection "
+            "logic in explainability.py and re-run it, then reload "
+            "this page."
+        )
+
+# ============================================================
+# FOOTER
+# ============================================================
+
+st.markdown(
+    """
+    <div class="fd-footer">
+        Built with <b>XGBoost</b> · <b>Keras</b> · <b>SHAP</b> ·
+        <b>Streamlit</b> — B.Tech final-year project,
+        Fraud Detection in Banking using Machine Learning and Blockchain
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
