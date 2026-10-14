@@ -22,8 +22,12 @@ blockchain-style audit trail — built as a B.Tech final-year project.
   per-transaction local explanation) on the XGBoost model
 - **Blockchain-style audit trail** — local tamper-evident hash chain
   (`blockchain_demo.py`) + reference Solidity contract (`FraudAudit.sol`)
-- **Streamlit UI** — 6 tabs: Fraud Detection, Model Performance, Adversarial
-  Testing, Blockchain Audit, Model Comparison, XGBoost Explainability
+- **Graph-neighbour model** (`train_gnn.py`) — a GraphSAGE-inspired model
+  using nearest-neighbour feature aggregation (clearly labelled as similarity
+  edges because the dataset has no real account/customer IDs)
+- **Transfer learning** (`train_transfer.py`) — pretrains an encoder with an
+  unsupervised autoencoder task, then fine-tunes it for fraud classification
+- **Streamlit UI** — 8 tabs, including GNN and transfer-learning evaluation
 
 ## 🧱 Tech Stack
 
@@ -41,8 +45,10 @@ fraud_detection/
 ├── artifacts/                  # generated: models, scaler, metrics, plots
 ├── data/
 │   └── creditcard.csv          # NOT included — download separately, see below
-├── app.py                      # Streamlit UI (6 tabs)
+├── app.py                      # Streamlit UI (8 tabs)
 ├── train_model.py              # trains the ANN on the real dataset, saves metrics + plots
+├── train_gnn.py                # GNN-inspired nearest-neighbour aggregation model
+├── train_transfer.py           # autoencoder pretraining + supervised fine-tuning
 ├── model_comparison.py         # benchmarks 4 more models against the ANN
 ├── explainability.py           # SHAP explainability on the XGBoost model
 ├── adversarial_test.py         # FGSM attack + adversarial training
@@ -96,13 +102,16 @@ Run in this order — each step depends on artifacts from the previous one:
 
 ```bash
 python train_model.py         # trains the ANN, saves artifacts/fraud_model.keras
+python train_gnn.py           # trains graph-neighbour aggregation model
+python train_transfer.py      # pretrains encoder, then fine-tunes classifier
 python model_comparison.py    # benchmarks LogReg/DecisionTree/RandomForest/XGBoost vs the ANN
 python explainability.py      # SHAP on the XGBoost model from model_comparison.py
 python adversarial_test.py    # FGSM attack + adversarial training on the ANN
 python -m streamlit run app.py
 ```
 
-Then open **http://localhost:8501**.
+Then open **http://localhost:8501**. The dashboard includes separate GNN and
+Transfer Learning tabs, plus a combined comparison of their saved metrics.
 
 Once everything above has been run once, you only need
 `python -m streamlit run app.py` for future sessions — all results are
@@ -179,3 +188,41 @@ Science & Engineering, Meerut Institute of Engineering & Technology.
 ## 📄 License
 
 MIT — feel free to fork and build on this for your own project.
+
+## 🕸️ GNN design note
+
+The source Kaggle dataset contains anonymized transaction features but no customer,
+account, card, or merchant identifiers. Therefore, `train_gnn.py` builds a
+feature-similarity neighbourhood using the `k` nearest standardized training
+transactions. It combines each transaction's own features with the mean features
+of its neighbours in a neural model. This is a **GraphSAGE-inspired
+neighbour-aggregation baseline**, not a graph of real banking relationships.
+For a production-style relational GNN, use a dataset with real entity IDs and
+time-aware edges, and avoid using test labels during graph construction.
+
+## 🔁 Transfer-learning design note
+
+`train_transfer.py` first trains an autoencoder to reconstruct standardized
+training features without using `Class`. It transfers the encoder weights into
+a fraud classifier and fine-tunes the classifier using training labels. This is
+self-supervised pretraining on the training split, not transfer from an external
+banking dataset. Compare it against the ANN using PR-AUC, precision, recall,
+F1, false positives, and the same held-out split; do not assume transfer learning
+will improve results before the experiment runs.
+
+### New training commands
+
+```bash
+python train_gnn.py
+python train_transfer.py
+python -m streamlit run app.py
+```
+
+Generated files:
+- `artifacts/gnn_model.keras`
+- `artifacts/gnn_metrics.json`
+- `artifacts/gnn_reference.npz`
+- `artifacts/pretrained_encoder.keras`
+- `artifacts/transfer_model.keras`
+- `artifacts/transfer_scaler.npz`
+- `artifacts/transfer_metrics.json`

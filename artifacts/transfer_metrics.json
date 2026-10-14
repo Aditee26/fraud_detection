@@ -1,0 +1,32 @@
+{
+  "accuracy": 0.9640462062427584,
+  "precision": 0.04225352112676056,
+  "recall": 0.9183673469387755,
+  "f1": 0.0807899461400359,
+  "roc_auc": 0.9757767907388054,
+  "pr_auc": 0.7028227517721338,
+  "true_negative": 54824,
+  "false_positive": 2040,
+  "false_negative": 8,
+  "true_positive": 90,
+  "confusion_matrix": [
+    [
+      54824,
+      2040
+    ],
+    [
+      8,
+      90
+    ]
+  ],
+  "model": "Transfer Learning (autoencoder-pretrained encoder)",
+  "pretraining_task": "Unsupervised reconstruction of transaction features",
+  "dataset_rows": 284807,
+  "train_rows": 227845,
+  "test_rows": 56962,
+  "test_fraud_rows": 98,
+  "pretraining_epochs_completed": 23,
+  "threshold": 0.5,
+  "seed": 42,
+  "note": "Encoder pretrained on unlabeled features from the training split, then fine-tuned for fraud classification."
+}

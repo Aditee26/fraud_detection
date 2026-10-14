@@ -400,16 +400,17 @@ else:
    st.success(
     "✅ Model trained using the REAL Kaggle Credit Card Fraud Detection dataset."
 )
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs(
 [
-"🔍 Fraud Detection",
-"📊 Model Performance",
-"🛡️ Adversarial Testing",
-"⛓️ Blockchain Audit",
-"⚖️ Model Comparison",
-"🔎 XGBoost Explainability",
-]
-)
+    "🔍 Fraud Detection",
+    "📊 Model Performance",
+    "🛡️ Adversarial Testing",
+    "⛓️ Blockchain Audit",
+    "⚖️ Model Comparison",
+    "🔎 XGBoost Explainability",
+    "🕸️ GNN",
+    "🔁 Transfer Learning",
+])
 
 with tab1:
     st.subheader(
@@ -2212,6 +2213,164 @@ with tab6:
             "logic in explainability.py and re-run it, then reload "
             "this page."
         )
+
+# ============================================================
+# TAB 7
+# GRAPH NEURAL NETWORK / NEIGHBOUR AGGREGATION
+# ============================================================
+
+with tab7:
+    st.subheader("🕸️ Graph Neural Network — Neighbour Aggregation")
+    st.write(
+        "This model aggregates features from the nearest training transactions "
+        "and combines that neighbourhood representation with the current transaction."
+    )
+    st.warning(
+        "Dataset limitation: the Kaggle file has no customer, account, card, or merchant IDs. "
+        "The graph therefore uses nearest-neighbour links in standardized feature space. "
+        "These are similarity edges, not real-world banking relationships."
+    )
+    gnn_metrics_path = os.path.join(ARTIFACT_DIR, "gnn_metrics.json")
+    gnn_model_path = os.path.join(ARTIFACT_DIR, "gnn_model.keras")
+    if not (os.path.exists(gnn_metrics_path) and os.path.exists(gnn_model_path)):
+        st.info("The GNN has not been trained yet. Run this command in the project terminal:")
+        st.code("python train_gnn.py", language="powershell")
+        st.caption("The script saves artifacts/gnn_model.keras and artifacts/gnn_metrics.json.")
+    else:
+        try:
+            with open(gnn_metrics_path, "r", encoding="utf-8") as f:
+                gnn_metrics = json.load(f)
+            st.success("GNN model and evaluation metrics found.")
+            cols = st.columns(6)
+            for col, label, key in zip(
+                cols,
+                ["Accuracy", "Precision", "Recall", "F1-score", "ROC-AUC", "PR-AUC"],
+                ["accuracy", "precision", "recall", "f1", "roc_auc", "pr_auc"],
+            ):
+                value = gnn_metrics.get(key)
+                display = format_percent(value) if key in ("accuracy", "precision", "recall") else format_number(value)
+                col.metric(label, display)
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Fraud caught", gnn_metrics.get("true_positive", "N/A"))
+            c2.metric("False alarms", f"{gnn_metrics.get('false_positive', 0):,}")
+            c3.metric("Fraud missed", gnn_metrics.get("false_negative", "N/A"))
+            st.markdown("### Model details")
+            st.write(f"**Architecture:** {gnn_metrics.get('architecture', 'N/A')}")
+            st.write(f"**Nearest neighbours per transaction:** {gnn_metrics.get('k_neighbors', 'N/A')}")
+            st.write(f"**Test transactions:** {gnn_metrics.get('test_rows', 'N/A'):,}")
+            st.caption(gnn_metrics.get("graph_semantics", ""))
+            with st.expander("View full GNN evaluation JSON"):
+                st.json(gnn_metrics)
+        except Exception as exc:
+            st.error(f"Could not read GNN results: {exc}")
+
+
+# ============================================================
+# TAB 8
+# TRANSFER LEARNING + ADVANCED MODEL COMPARISON
+# ============================================================
+
+with tab8:
+    st.subheader("🔁 Transfer Learning — Pretrained Encoder")
+    st.write(
+        "An autoencoder first learns a compressed representation by reconstructing "
+        "transaction features without using the fraud labels. Its encoder is then "
+        "transferred into a supervised fraud classifier and fine-tuned."
+    )
+    st.info(
+        "This is self-supervised transfer within the training split, not transfer "
+        "from an external banking dataset. Its value must be established by comparing "
+        "held-out metrics against the ANN and other models."
+    )
+    transfer_metrics_path = os.path.join(ARTIFACT_DIR, "transfer_metrics.json")
+    transfer_model_path = os.path.join(ARTIFACT_DIR, "transfer_model.keras")
+    transfer_metrics = None
+    if not (os.path.exists(transfer_metrics_path) and os.path.exists(transfer_model_path)):
+        st.warning("Transfer-learning model has not been trained yet.")
+        st.code("python train_transfer.py", language="powershell")
+    else:
+        try:
+            with open(transfer_metrics_path, "r", encoding="utf-8") as f:
+                transfer_metrics = json.load(f)
+            st.success("Transfer-learning model and evaluation metrics found.")
+            cols = st.columns(6)
+            for col, label, key in zip(
+                cols,
+                ["Accuracy", "Precision", "Recall", "F1-score", "ROC-AUC", "PR-AUC"],
+                ["accuracy", "precision", "recall", "f1", "roc_auc", "pr_auc"],
+            ):
+                value = transfer_metrics.get(key)
+                display = format_percent(value) if key in ("accuracy", "precision", "recall") else format_number(value)
+                col.metric(label, display)
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Fraud caught", transfer_metrics.get("true_positive", "N/A"))
+            c2.metric("False alarms", f"{transfer_metrics.get('false_positive', 0):,}")
+            c3.metric("Fraud missed", transfer_metrics.get("false_negative", "N/A"))
+            st.write(f"**Pretraining task:** {transfer_metrics.get('pretraining_task', 'Unsupervised reconstruction')}")
+            st.write(f"**Test transactions:** {transfer_metrics.get('test_rows', 'N/A'):,}")
+        except Exception as exc:
+            st.error(f"Could not read transfer-learning results: {exc}")
+
+    st.divider()
+    st.markdown("### ANN vs GNN vs Transfer Learning")
+    comparison_rows = []
+    baseline = metrics
+    if isinstance(baseline, dict):
+        comparison_rows.append({
+            "Model": "ANN baseline",
+            "Precision": baseline.get("precision"),
+            "Recall": baseline.get("recall"),
+            "F1": baseline.get("f1"),
+            "ROC-AUC": baseline.get("roc_auc"),
+            "PR-AUC": baseline.get("pr_auc"),
+            "False positives": baseline.get("false_positive",
+                baseline.get("performance", {}).get("false_positive") if isinstance(baseline.get("performance"), dict) else None),
+            "Test rows": baseline.get("n_test", baseline.get("test_rows")),
+        })
+    gnn_metrics_path = os.path.join(ARTIFACT_DIR, "gnn_metrics.json")
+    if os.path.exists(gnn_metrics_path):
+        try:
+            with open(gnn_metrics_path, "r", encoding="utf-8") as f:
+                gnn_metrics = json.load(f)
+            comparison_rows.append({
+                "Model": "GNN neighbour aggregation",
+                "Precision": gnn_metrics.get("precision"), "Recall": gnn_metrics.get("recall"),
+                "F1": gnn_metrics.get("f1"), "ROC-AUC": gnn_metrics.get("roc_auc"),
+                "PR-AUC": gnn_metrics.get("pr_auc"), "False positives": gnn_metrics.get("false_positive"),
+                "Test rows": gnn_metrics.get("test_rows"),
+            })
+        except Exception:
+            pass
+    if transfer_metrics:
+        comparison_rows.append({
+            "Model": "Transfer learning",
+            "Precision": transfer_metrics.get("precision"), "Recall": transfer_metrics.get("recall"),
+            "F1": transfer_metrics.get("f1"), "ROC-AUC": transfer_metrics.get("roc_auc"),
+            "PR-AUC": transfer_metrics.get("pr_auc"), "False positives": transfer_metrics.get("false_positive"),
+            "Test rows": transfer_metrics.get("test_rows"),
+        })
+    if comparison_rows:
+        comparison_df = pd.DataFrame(comparison_rows)
+        for metric_col in ["Precision", "Recall"]:
+            comparison_df[metric_col] = comparison_df[metric_col].map(
+                lambda value: f"{value * 100:.2f}%" if isinstance(value, (int, float)) else "N/A"
+            )
+        for metric_col in ["F1", "ROC-AUC", "PR-AUC"]:
+            comparison_df[metric_col] = comparison_df[metric_col].map(
+                lambda value: f"{value:.4f}" if isinstance(value, (int, float)) else "N/A"
+            )
+        comparison_df["False positives"] = comparison_df["False positives"].map(
+            lambda value: f"{value:,}" if isinstance(value, (int, float)) else "N/A"
+        )
+        st.dataframe(comparison_df, use_container_width=True, hide_index=True)
+        st.caption(
+            "Run all three models on their documented held-out splits before interpreting this table. "
+            "The ANN baseline uses the split created by train_model.py; the new scripts use the same "
+            "random seed and stratified 80/20 split, but should still be checked for exact split consistency."
+        )
+    else:
+        st.info("Train the baseline ANN and at least one advanced model to populate this comparison.")
+
 
 # ============================================================
 # FOOTER
