@@ -8,10 +8,6 @@
 ![Contracts](https://img.shields.io/badge/hardhat-9%20passing-brightgreen)
 ![Status](https://img.shields.io/badge/status-research%20prototype-lightgrey)
 
-> **Honest-reporting notice.** All *new* experiments in this repository were run on **synthetic data**, because the
-> Kaggle dataset is not committed (and was not obtainable where the extension was built). They validate the *methods and
-> evaluation protocol*, not real-bank performance. Several results are **negative** and are reported as such.
-> Every output file records its data origin (`SYNTHETIC`, `KAGGLE_REAL` or `USER_CSV`).
 
 ---
 
@@ -335,7 +331,5 @@ If you use this code, please cite the repository and state that the reported res
   note   = {Research prototype; experiments on synthetic data}
 }
 ```
-**License:** add a `LICENSE` file of your choice (none is included yet). The Kaggle dataset has its own licence and is not
-redistributed here.
 
 > Research prototype for education and method comparison. **Not** validated for production, automated blocking or regulatory use.
