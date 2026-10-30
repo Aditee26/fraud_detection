@@ -1,0 +1,32 @@
+{
+  "accuracy": 0.98005688002528,
+  "precision": 0.07319078947368421,
+  "recall": 0.9081632653061225,
+  "f1": 0.1354642313546423,
+  "roc_auc": 0.9773231763864804,
+  "pr_auc": 0.689532766929044,
+  "true_negative": 55737,
+  "false_positive": 1127,
+  "false_negative": 9,
+  "true_positive": 89,
+  "confusion_matrix": [
+    [
+      55737,
+      1127
+    ],
+    [
+      9,
+      89
+    ]
+  ],
+  "model": "GNN (nearest-neighbour aggregation)",
+  "architecture": "GraphSAGE-inspired two-view feature aggregation",
+  "dataset_rows": 284807,
+  "train_rows": 227845,
+  "test_rows": 56962,
+  "test_fraud_rows": 98,
+  "k_neighbors": 8,
+  "threshold": 0.5,
+  "seed": 42,
+  "graph_semantics": "Feature-similarity edges only; not real account/customer relationships."
+}

@@ -1,0 +1,69 @@
+{
+  "origin": "SYNTHETIC",
+  "n": 20000,
+  "drift_stream_index": 11944,
+  "label_delay": 100,
+  "first_detection_after_drift": {
+    "ADWIN": {
+      "stream": "fraud_miss",
+      "delay_transactions": 597
+    },
+    "DDM": {
+      "stream": "fraud_miss",
+      "delay_transactions": 445
+    }
+  },
+  "false_alarms_before_drift": {
+    "ADWIN": 0,
+    "DDM": 2
+  },
+  "events_total": 5,
+  "candidate_evaluation": {
+    "current": {
+      "precision": 0.0684931506849315,
+      "recall": 0.0423728813559322,
+      "f1": 0.05235602094240838,
+      "pr_auc": 0.060607716930088956,
+      "roc_auc": 0.5944335339908068,
+      "mcc": 0.017413841844770146,
+      "tp": 5,
+      "fp": 68,
+      "fn": 113,
+      "tn": 2314,
+      "threshold": 0.5,
+      "n": 2500,
+      "n_fraud": 118
+    },
+    "candidate": {
+      "precision": 0.48514851485148514,
+      "recall": 0.4152542372881356,
+      "f1": 0.4474885844748858,
+      "pr_auc": 0.42012991907277486,
+      "roc_auc": 0.9250024904296347,
+      "mcc": 0.42373735101320986,
+      "tp": 49,
+      "fp": 52,
+      "fn": 69,
+      "tn": 2330,
+      "threshold": 0.5,
+      "n": 2500,
+      "n_fraud": 118
+    },
+    "pr_auc_gain": 0.35952220214268593,
+    "min_gain_required": 0.02,
+    "recommend_promote": true,
+    "candidate_id": "cand_20261029T191715420977",
+    "trained_on": [
+      9789,
+      12289
+    ],
+    "holdout": [
+      12289,
+      14789
+    ],
+    "deployed_model_changed": false,
+    "note": "Deployed model left unchanged; promotion needs explicit approval."
+  },
+  "current_model_after_run": "v001",
+  "caveat": "Single synthetic stream/seed: detection delays are illustrative, not general performance claims."
+}

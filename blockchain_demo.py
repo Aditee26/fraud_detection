@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 
 import numpy as np
 
-import tensorflow as tf
 
 
 # -------------------------------------------------------------------
@@ -24,160 +23,8 @@ DEFAULT_THRESHOLD = 0.5
 DEFAULT_ROWS = 5
 
 
-# -------------------------------------------------------------------
-# Blockchain block
-# -------------------------------------------------------------------
-
-@dataclass
-class Block:
-    index: int
-    transaction_id: str
-    actual_class: int
-    decision: str
-    risk_score: float
-    model_version: str
-    timestamp: str
-    previous_hash: str
-    hash: str
-
-
-# -------------------------------------------------------------------
-# Local hash chain
-# -------------------------------------------------------------------
-
-class LocalFraudChain:
-
-    def __init__(self):
-        self.chain = []
-
-        # Genesis block
-        self._create_genesis_block()
-
-    def _calculate_hash(self, block_data):
-        """
-        Creates SHA-256 hash from block contents.
-        """
-
-        encoded = json.dumps(
-            block_data,
-            sort_keys=True,
-            separators=(",", ":")
-        ).encode("utf-8")
-
-        return hashlib.sha256(encoded).hexdigest()
-
-    def _create_genesis_block(self):
-        """
-        Creates the first block in the chain.
-        """
-
-        timestamp = datetime.now(timezone.utc).isoformat()
-
-        block_data = {
-            "index": 0,
-            "transaction_id": "GENESIS",
-            "actual_class": -1,
-            "decision": "GENESIS",
-            "risk_score": 0.0,
-            "model_version": "system",
-            "timestamp": timestamp,
-            "previous_hash": "0",
-        }
-
-        block_hash = self._calculate_hash(block_data)
-
-        block = Block(
-            **block_data,
-            hash=block_hash
-        )
-
-        self.chain.append(block)
-
-    def add_transaction(
-        self,
-        transaction_id,
-        actual_class,
-        decision,
-        risk_score,
-        model_version
-    ):
-        """
-        Adds one real model prediction to the chain.
-        """
-
-        previous_block = self.chain[-1]
-
-        index = len(self.chain)
-        timestamp = datetime.now(timezone.utc).isoformat()
-
-        block_data = {
-            "index": index,
-            "transaction_id": transaction_id,
-            "actual_class": int(actual_class),
-            "decision": decision,
-            "risk_score": round(float(risk_score), 4),
-            "model_version": model_version,
-            "timestamp": timestamp,
-            "previous_hash": previous_block.hash,
-        }
-
-        block_hash = self._calculate_hash(block_data)
-
-        block = Block(
-            **block_data,
-            hash=block_hash
-        )
-
-        self.chain.append(block)
-
-        return block
-
-    def verify_integrity(self):
-        """
-        Verifies that:
-
-        1. Every block's hash is correct.
-        2. Every block points to the previous block's hash.
-        """
-
-        for i in range(1, len(self.chain)):
-
-            current = self.chain[i]
-            previous = self.chain[i - 1]
-
-            # Rebuild block data without the stored hash
-            block_data = {
-                "index": current.index,
-                "transaction_id": current.transaction_id,
-                "actual_class": current.actual_class,
-                "decision": current.decision,
-                "risk_score": current.risk_score,
-                "model_version": current.model_version,
-                "timestamp": current.timestamp,
-                "previous_hash": current.previous_hash,
-            }
-
-            expected_hash = self._calculate_hash(block_data)
-
-            if current.hash != expected_hash:
-                return False
-
-            if current.previous_hash != previous.hash:
-                return False
-
-        return True
-
-    def save(self, path):
-        """
-        Saves the complete chain as JSON.
-        """
-
-        with open(path, "w", encoding="utf-8") as file:
-            json.dump(
-                [asdict(block) for block in self.chain],
-                file,
-                indent=2
-            )
+# Block / LocalFraudChain now live in audit_chain.py (TensorFlow-free, unit-tested).
+from audit_chain import Block, LocalFraudChain, verify_blocks, verify_against_anchor  # noqa: F401
 
 
 # -------------------------------------------------------------------
@@ -231,6 +78,7 @@ def load_model_and_scaler():
             "Run train_model.py first."
         )
 
+    import tensorflow as tf  # lazy: only needed to score real rows
     model = tf.keras.models.load_model(MODEL_PATH)
 
     scaler_data = np.load(SCALER_PATH)

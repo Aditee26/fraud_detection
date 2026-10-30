@@ -1,0 +1,16 @@
+
+
+  FraudAudit
+    ✔ starts empty with a zero head and the deployer as owner
+    ✔ records a decision, emits an event and advances the head
+    ✔ chain hash matches an independent off-chain recomputation
+    ✔ rejects non-owners (126ms)
+    ✔ rejects risk scores above 10000 bps and empty digests
+    ✔ reverts on out-of-range reads
+    ✔ verifyRecord detects a wrong off-chain record
+    ✔ has no function to edit or delete a stored record
+    ✔ uses a two-step ownership transfer
+
+
+  9 passing (4s)
+

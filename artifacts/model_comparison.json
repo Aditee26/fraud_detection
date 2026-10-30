@@ -1,0 +1,159 @@
+{
+  "phase": "1 - model comparison",
+  "dataset": {
+    "path": "data/creditcard.csv",
+    "total_rows": 284807,
+    "fraud_rows": 492,
+    "fraud_rate_pct": 0.1727485630620034
+  },
+  "protocol": {
+    "split": "stratified random",
+    "test_size": 0.2,
+    "random_state": 42,
+    "decision_threshold": 0.5,
+    "scaling": "StandardScaler fitted on training rows only",
+    "imbalance_handling": "class_weight='balanced' for sklearn models, scale_pos_weight for XGBoost, class weights for the pre-trained ANN. No SMOTE.",
+    "split_matches_saved_scaler": true,
+    "train_rows": 227845,
+    "test_rows": 56962,
+    "test_fraud_rows": 98
+  },
+  "note": "A random split is used here to stay consistent with train_model.py. The research paper recommends a temporal split; that is a documented limitation, not an oversight.",
+  "results": [
+    {
+      "model": "Logistic Regression",
+      "accuracy": 0.9755275446789088,
+      "precision": 0.06097560975609756,
+      "recall": 0.9183673469387755,
+      "f1": 0.11435832274459974,
+      "roc_auc": 0.9720834996210076,
+      "pr_auc": 0.7189705771419241,
+      "mcc": 0.2332014073328229,
+      "true_negative": 55478,
+      "false_positive": 1386,
+      "false_negative": 8,
+      "true_positive": 90,
+      "alerts_raised": 1476,
+      "confusion_matrix": [
+        [
+          55478,
+          1386
+        ],
+        [
+          8,
+          90
+        ]
+      ],
+      "threshold": 0.5,
+      "train_seconds": 3.97
+    },
+    {
+      "model": "Decision Tree",
+      "accuracy": 0.9802851023489344,
+      "precision": 0.06968933669185558,
+      "recall": 0.8469387755102041,
+      "f1": 0.1287820015515904,
+      "roc_auc": 0.9184736693636375,
+      "pr_auc": 0.6491083578623708,
+      "mcc": 0.23967091861697762,
+      "true_negative": 55756,
+      "false_positive": 1108,
+      "false_negative": 15,
+      "true_positive": 83,
+      "alerts_raised": 1191,
+      "confusion_matrix": [
+        [
+          55756,
+          1108
+        ],
+        [
+          15,
+          83
+        ]
+      ],
+      "threshold": 0.5,
+      "train_seconds": 11.4
+    },
+    {
+      "model": "Random Forest",
+      "accuracy": 0.9995084442259752,
+      "precision": 0.9375,
+      "recall": 0.7653061224489796,
+      "f1": 0.8426966292134831,
+      "roc_auc": 0.9626650375259839,
+      "pr_auc": 0.8481535919399134,
+      "mcc": 0.8468073237036224,
+      "true_negative": 56859,
+      "false_positive": 5,
+      "false_negative": 23,
+      "true_positive": 75,
+      "alerts_raised": 80,
+      "confusion_matrix": [
+        [
+          56859,
+          5
+        ],
+        [
+          23,
+          75
+        ]
+      ],
+      "threshold": 0.5,
+      "train_seconds": 19.8
+    },
+    {
+      "model": "XGBoost",
+      "accuracy": 0.9995259997893332,
+      "precision": 0.8817204301075269,
+      "recall": 0.8367346938775511,
+      "f1": 0.8586387434554974,
+      "roc_auc": 0.9796887381852009,
+      "pr_auc": 0.8734296925676658,
+      "mcc": 0.8586967748445028,
+      "true_negative": 56853,
+      "false_positive": 11,
+      "false_negative": 16,
+      "true_positive": 82,
+      "alerts_raised": 93,
+      "confusion_matrix": [
+        [
+          56853,
+          11
+        ],
+        [
+          16,
+          82
+        ]
+      ],
+      "threshold": 0.5,
+      "train_seconds": 4.97
+    },
+    {
+      "model": "ANN (existing)",
+      "accuracy": 0.9793897686176749,
+      "precision": 0.07028753993610223,
+      "recall": 0.8979591836734694,
+      "f1": 0.13037037037037036,
+      "roc_auc": 0.9759455607651052,
+      "pr_auc": 0.7047394011537411,
+      "mcc": 0.2480303476638445,
+      "true_negative": 55700,
+      "false_positive": 1164,
+      "false_negative": 10,
+      "true_positive": 88,
+      "alerts_raised": 1252,
+      "confusion_matrix": [
+        [
+          55700,
+          1164
+        ],
+        [
+          10,
+          88
+        ]
+      ],
+      "threshold": 0.5,
+      "train_seconds": 0.0
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{"detector": "DDM", "stream": "error", "stream_index": 6195, "label_index": 6095, "true_drift_index": 11944, "pre_drift": true}
+{"detector": "DDM", "stream": "error", "stream_index": 6236, "label_index": 6136, "true_drift_index": 11944, "pre_drift": true}
+{"detector": "DDM", "stream": "fraud_miss", "stream_index": 12389, "label_index": 12289, "true_drift_index": 11944, "pre_drift": false}
+{"detector": "ADWIN", "stream": "fraud_miss", "stream_index": 12541, "label_index": 12441, "true_drift_index": 11944, "pre_drift": false}
+{"detector": "DDM", "stream": "error", "stream_index": 13046, "label_index": 12946, "true_drift_index": 11944, "pre_drift": false}

@@ -1,9 +1,24 @@
-@"
+# data (the Kaggle file must stay external)
+data/
+*.csv.zip
+# environments, caches, secrets
 .venv/
+venv/
 __pycache__/
 *.pyc
+.pytest_cache/
 .env
+.env.*
 .streamlit/secrets.toml
 .DS_Store
-"@ | Out-File -Encoding utf8 .gitignore
-data/creditcard.csv
+# node / hardhat output
+node_modules/
+build/
+cache/
+# generated, re-creatable
+artifacts/research/drift/registry/
+artifacts/research/drift/registry/**
+*.zip
+# broken symlinks into a local venv (point at ../../.venv)
+.agents/
+.claude/

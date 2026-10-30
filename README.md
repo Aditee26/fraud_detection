@@ -1,107 +1,105 @@
-# 🏦 Adversarially Robust Fraud Detection in Banking (ML + Blockchain)
+# ðŸ¦ Adversarially Robust, Blockchain-Audited Fraud Detection (B.Tech research project)
 
-A working prototype demonstrating fraud detection with a Keras ANN, adversarial
-robustness testing (FGSM + adversarial training), SHAP explainability, and a
-tamper-evident blockchain-style audit trail — built as a B.Tech final-year
-project.
+Multi-model fraud-detection research code: ANN / XGBoost / LSTM / GraphSAGE with learned late fusion, transfer learning,
+FGSM/PGD robustness, SHAP + LIME, ADWIN/DDM drift monitoring with a safe retraining workflow, a tamper-evident audit log
+(local hash chain + Solidity contract) and a Streamlit dashboard.
 
-## ✨ Features
 
-- **ANN fraud classifier** (Dense 64→32→16→1) trained with class weights to
-  handle heavy class imbalance
-- **Real or synthetic data, auto-detected** — works out of the box with a
-  synthetic demo dataset, or drop in the real **Kaggle Credit Card Fraud**
-  or **IEEE-CIS Fraud Detection** dataset and it's picked up automatically —
-  no code changes needed
-- **Generic preprocessing pipeline** — numeric/categorical columns are
-  detected from the data itself (`sklearn.ColumnTransformer`), not
-  hardcoded to one dataset's column names
-- **Adversarial robustness demo** — real FGSM attack, measured clean vs.
-  adversarial accuracy, then adversarial training to recover robustness
-- **Explainability** — SHAP values for individual transactions
-- **Blockchain-style audit trail** — local tamper-evident hash chain +
-  reference Solidity contract (`FraudAudit.sol`)
-- **Streamlit UI** — 4 tabs: Fraud Detection, Model Performance, Adversarial
-  Testing, Blockchain Audit
 
-## 🧱 Tech Stack
-
-`Python` · `TensorFlow / Keras` · `scikit-learn` · `SHAP` · `Streamlit` ·
-`Solidity` (reference contract only)
-
-## 📁 Project Structure
-
-```
-fraud_detection_demo/
-├── app.py                     # Streamlit UI (4 tabs)
-├── train_model.py             # trains the ANN, saves metrics + plots
-├── adversarial_test.py        # FGSM attack + adversarial training
-├── blockchain_demo.py         # local tamper-evident hash chain
-├── data_loader.py             # auto-detects real vs. synthetic dataset
-├── generate_demo_data.py      # synthetic fallback dataset generator
-├── FraudAudit.sol             # reference Solidity smart contract
-├── requirements.txt
-├── data/                      # put downloaded datasets here (see below)
-└── artifacts/                 # generated: model, scaler, metrics, plots
-```
-
-## 🚀 Getting Started
-
-```bash
-git clone https://github.com/Aditee26/fraud-detection.git
-cd fraud-detection
-
-python -m venv .venv
-.venv\Scripts\Activate.ps1        # Windows PowerShell
-# source .venv/bin/activate       # macOS/Linux
-
-pip install -r requirements.txt
-```
-
-### Use real data (optional but recommended)
-
-The pipeline runs with a synthetic dataset by default. To train on real
-data instead, download **one or both** and drop them straight into `data/`
-— nothing else to configure:
-
-| Dataset | Where to get it | Files to place in `data/` |
-|---|---|---|
-| Credit Card Fraud Detection | [kaggle.com/datasets/mlg-ulb/creditcardfraud](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) | `creditcard.csv` |
-| IEEE-CIS Fraud Detection | [kaggle.com/competitions/ieee-fraud-detection/data](https://www.kaggle.com/competitions/ieee-fraud-detection/data) | `train_transaction.csv` (required), `train_identity.csv` (optional) |
-
-If both are present, `creditcard.csv` is used by default — force a choice
-with `set FRAUD_DATASET=ieee` (PowerShell: `$env:FRAUD_DATASET="ieee"`)
-before running.
-
-### Train and launch
-
-```bash
-python train_model.py
-python adversarial_test.py
+## Quick start (Windows 11 PowerShell - details in START_HERE.md)
+```powershell
+py -3.12 -m venv .venv; .\.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+python -m pytest -q
+python transfer_learning.py --quick
 python -m streamlit run app.py
 ```
 
-Then open **http://localhost:8501**.
+## What is where
+| Area | Files |
+|---|---|
+| Original pipeline (Kaggle data) | `train_model.py`, `model_comparison.py`, `adversarial_test.py`, `explainability.py`, `train_transfer.py`, `train_gnn.py` (unchanged) |
+| Shared library | `fraudlab/` (synthetic data, chronological split, preprocessing, metrics, NN, adversarial, sequences, graph, fusion, drift, registry, explain) |
+| Transfer learning | `transfer_learning.py` â†’ `artifacts/research/transfer/` |
+| Multi-model + fusion | `train_multimodel.py` â†’ `artifacts/research/multimodel/` |
+| Robustness (FGSM, PGD, PGD-AT) | `adversarial_research.py` â†’ `artifacts/research/adversarial/` |
+| Explainability | `explain_research.py` (SHAP, LIME), original `explainability.py` |
+| Drift + retraining | `drift_demo.py`, `fraudlab/drift.py`, `fraudlab/registry.py` |
+| Audit | `audit_chain.py`, `blockchain_demo.py`, `contracts/FraudAudit.sol`, `contracts/test/` (Hardhat) |
+| Dashboard | `app.py` (8 original tabs + 4 research tabs), `research_dashboard.py` |
+| Tests | `tests/` (62 pytest tests), `contracts/test/` (9 Hardhat tests) |
 
-Once trained, you only need `python -m streamlit run app.py` for future
-sessions — the model files are saved in `artifacts/`.
+## Results (SYNTHETIC data; one machine; see CSVs for all metrics)
+| Experiment | Outcome |
+|---|---|
+| Transfer vs scratch, PR-AUC (3 seeds) | âˆ’0.080 / âˆ’0.023 / +0.001 / âˆ’0.011 at 10 / 25 / 50 / 100 % target labels - **no benefit found** |
+| Multi-model, test PR-AUC | GraphSAGE 0.740, LSTM 0.693, learned fusion 0.691, simple average 0.677, ANN 0.622, XGBoost 0.593 - **fusion did not beat the best branch** |
+| PGD (Îµ=0.1), PR-AUC | standard ANN 0.375 vs PGD-adversarially-trained 0.428; at Îµ=0.3 both â‰ˆ0.05-0.07 - **no general robustness** |
+| Drift (synthetic stream) | ADWIN alarm 597 and DDM 445 transactions after the drift point; DDM raised 2 false alarms before it |
+| Audit | 62/62 pytest and 9/9 Hardhat tests pass; no public-testnet deployment |
 
-## 📊 Sample Results
+Pre-existing Kaggle results (`artifacts/model_comparison.csv` etc.) are internally consistent but **not reproduced here**.
+The former README table (99.05 % / 84.60 %) matched no artifact and was removed.
 
-*(from a training run — regenerate with your own data via the commands
-above; numbers will vary by dataset and split)*
+## Design guarantees (all unit-tested)
+Chronological splits; preprocessing fit on train only; thresholds chosen on validation; causal LSTM windows and graph edges
+(runtime assertions); fusion trained only on out-of-sample predictions; attacks respect Îµ-budget, training-range bounds and
+immutable features; no graph is fabricated for data without entity ids; candidate models are never auto-promoted.
 
-| Model | Clean Accuracy | Adversarial (FGSM) Accuracy |
-|---|---|---|
-| Normal ANN | 99.05% | 84.60% |
-| Adversarially Trained ANN | 99.88% | 94.97% |
+## Data
+Put Kaggle `creditcard.csv` in `data/` (git-ignored) for the original pipeline. `python generate_synthetic_data.py` writes
+labelled synthetic CSVs. Perturbing anonymised PCA features is a mathematical test, not a physical attack.
 
-## 🎓 Academic Context
+## Git workflow
+```powershell
+git checkout feature/research-extension
+git push -u origin feature/research-extension     # then open a pull request; main is untouched
+```
+
+## ðŸŽ“ Academic Context
 
 Built for the final-year project *"Adversarially Robust Fraud Detection in
 Banking Using Machine Learning and Blockchain,"* Department of Computer
 Science & Engineering, Meerut Institute of Engineering & Technology.
 
-## 📄 License
+## ðŸ“„ License
 
-MIT — feel free to fork and build on this for your own project.
+MIT â€” feel free to fork and build on this for your own project.
+
+## ðŸ•¸ï¸ GNN design note
+
+The source Kaggle dataset contains anonymized transaction features but no customer,
+account, card, or merchant identifiers. Therefore, `train_gnn.py` builds a
+feature-similarity neighbourhood using the `k` nearest standardized training
+transactions. It combines each transaction's own features with the mean features
+of its neighbours in a neural model. This is a **GraphSAGE-inspired
+neighbour-aggregation baseline**, not a graph of real banking relationships.
+For a production-style relational GNN, use a dataset with real entity IDs and
+time-aware edges, and avoid using test labels during graph construction.
+
+## ðŸ” Transfer-learning design note
+
+`train_transfer.py` first trains an autoencoder to reconstruct standardized
+training features without using `Class`. It transfers the encoder weights into
+a fraud classifier and fine-tunes the classifier using training labels. This is
+self-supervised pretraining on the training split, not transfer from an external
+banking dataset. Compare it against the ANN using PR-AUC, precision, recall,
+F1, false positives, and the same held-out split; do not assume transfer learning
+will improve results before the experiment runs.
+
+### New training commands
+
+```bash
+python train_gnn.py
+python train_transfer.py
+python -m streamlit run app.py
+```
+
+Generated files:
+- `artifacts/gnn_model.keras`
+- `artifacts/gnn_metrics.json`
+- `artifacts/gnn_reference.npz`
+- `artifacts/pretrained_encoder.keras`
+- `artifacts/transfer_model.keras`
+- `artifacts/transfer_scaler.npz`
+- `artifacts/transfer_metrics.json`

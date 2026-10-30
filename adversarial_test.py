@@ -11,6 +11,16 @@ Implements real FGSM (Fast Gradient Sign Method) directly with TensorFlow
 gradients (no ART dependency needed for this simple ANN case, keeping the
 prototype lightweight). Every number in the output comparison table is
 computed by actually attacking/retraining the model -- nothing is invented.
+
+CHANGE LOG (this version):
+- EPSILON lowered from 0.3 to 0.1. 0.3 was an unrealistically strong
+  perturbation in standardized feature space (30% of one std-dev shift
+  on every one of 30 features simultaneously). 0.1 is a more standard,
+  more realistic attack budget.
+- Added precision/recall/F1 tracking under attack, not just accuracy.
+  With 99.8% of transactions legitimate, accuracy barely moves even when
+  fraud-catching ability changes a lot -- precision/recall show the real
+  picture, same reason we don't rely on accuracy elsewhere in this project.
 """
 
 import json
@@ -22,7 +32,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.class_weight import compute_class_weight
@@ -33,7 +43,7 @@ from train_model import (
     SEED
 )
 
-EPSILON = 0.3  # FGSM perturbation budget (in scaled feature space)
+EPSILON = 0.1  # FGSM perturbation budget (in scaled feature space)
 
 
 def fgsm_attack(model, X, y, epsilon):
@@ -53,7 +63,13 @@ def fgsm_attack(model, X, y, epsilon):
 def evaluate(model, X, y, threshold=0.5):
     prob = model.predict(X, verbose=0).ravel()
     pred = (prob >= threshold).astype(int)
-    return accuracy_score(y, pred), prob
+    metrics = {
+        "accuracy": float(accuracy_score(y, pred)),
+        "precision": float(precision_score(y, pred, zero_division=0)),
+        "recall": float(recall_score(y, pred, zero_division=0)),
+        "f1": float(f1_score(y, pred, zero_division=0)),
+    }
+    return metrics, prob
 
 
 def main():
@@ -78,7 +94,7 @@ def main():
         raise SystemExit("Run train_model.py first to produce artifacts/fraud_model.keras")
     normal_model = keras.models.load_model(normal_model_path)
 
-    clean_acc, clean_prob = evaluate(normal_model, X_test_s, y_test)
+    clean_metrics, clean_prob = evaluate(normal_model, X_test_s, y_test)
 
     # Pick one genuine fraud example to show a before/after story.
     fraud_idx = np.where(y_test == 1)[0]
@@ -89,7 +105,7 @@ def main():
 
     # ---- 2. Attack the normal model with FGSM ----
     X_test_adv = fgsm_attack(normal_model, X_test_s, y_test, EPSILON)
-    adv_acc_normal, adv_prob = evaluate(normal_model, X_test_adv, y_test)
+    adv_metrics_normal, adv_prob = evaluate(normal_model, X_test_adv, y_test)
 
     x_demo_adv = fgsm_attack(normal_model, x_demo, y_demo, EPSILON)
     prob_after = float(normal_model.predict(x_demo_adv, verbose=0).ravel()[0])
@@ -111,9 +127,9 @@ def main():
     robust_model.save(os.path.join(ARTIFACT_DIR, "fraud_model_robust.keras"))
 
     # ---- 4. Re-evaluate: robust model on clean data and on fresh FGSM attack ----
-    clean_acc_robust, _ = evaluate(robust_model, X_test_s, y_test)
+    clean_metrics_robust, _ = evaluate(robust_model, X_test_s, y_test)
     X_test_adv_vs_robust = fgsm_attack(robust_model, X_test_s, y_test, EPSILON)
-    adv_acc_robust, _ = evaluate(robust_model, X_test_adv_vs_robust, y_test)
+    adv_metrics_robust, _ = evaluate(robust_model, X_test_adv_vs_robust, y_test)
 
     prob_after_robust_training = float(
         robust_model.predict(fgsm_attack(robust_model, x_demo, y_demo, EPSILON), verbose=0).ravel()[0]
@@ -122,12 +138,12 @@ def main():
     comparison = {
         "epsilon": EPSILON,
         "normal_model": {
-            "clean_accuracy": round(float(clean_acc), 4),
-            "adversarial_accuracy": round(float(adv_acc_normal), 4),
+            "clean": clean_metrics,
+            "adversarial": adv_metrics_normal,
         },
         "adversarially_trained_model": {
-            "clean_accuracy": round(float(clean_acc_robust), 4),
-            "adversarial_accuracy": round(float(adv_acc_robust), 4),
+            "clean": clean_metrics_robust,
+            "adversarial": adv_metrics_robust,
         },
         "single_transaction_demo": {
             "fraud_probability_normal_model_clean_input": round(prob_before, 4),
@@ -142,8 +158,8 @@ def main():
 
     # Bar chart: clean vs adversarial accuracy, normal vs robust model.
     labels = ["Normal ANN", "Adversarially Trained ANN"]
-    clean_vals = [clean_acc, clean_acc_robust]
-    adv_vals = [adv_acc_normal, adv_acc_robust]
+    clean_vals = [clean_metrics["accuracy"], clean_metrics_robust["accuracy"]]
+    adv_vals = [adv_metrics_normal["accuracy"], adv_metrics_robust["accuracy"]]
     x = np.arange(len(labels))
     width = 0.32
     fig, ax = plt.subplots(figsize=(6, 4))

@@ -1,0 +1,51 @@
+{
+  "provenance": {
+    "data_origin": "SYNTHETIC",
+    "note": "Synthetic-domain demonstration; shared latent fraud signal, different feature schemas."
+  },
+  "args": {
+    "quick": false,
+    "seeds": 3,
+    "epochs": 20,
+    "n_source": 30000,
+    "n_target": 20000,
+    "adapter_dim": 48,
+    "seed": 0,
+    "source_csv": null,
+    "target_csv": null
+  },
+  "source_pretrain_seconds": 4.215530438999849,
+  "source_domain_test_metrics": {
+    "precision": 0.5841584158415841,
+    "recall": 0.7814569536423841,
+    "f1": 0.668555240793201,
+    "pr_auc": 0.7522846941338741,
+    "roc_auc": 0.9804156851160121,
+    "mcc": 0.662842396129745,
+    "tp": 118,
+    "fp": 84,
+    "fn": 33,
+    "tn": 4265,
+    "threshold": 0.9085510969161987,
+    "n": 4500,
+    "n_fraud": 151
+  },
+  "source_schema": [
+    "f0",
+    "f1",
+    "f2",
+    "..."
+  ],
+  "target_schema": [
+    "V1",
+    "V2",
+    "V3",
+    "..."
+  ],
+  "alignment": "domain-specific Dense adapter per schema + canonical (log_amount, hour_sin, hour_cos) bypass; only the shared encoder is transferred",
+  "target_split": "chronological 60/20/20",
+  "threshold": "max-F1 on target validation split",
+  "n_target_test": 4000,
+  "n_target_test_fraud": 61,
+  "tensorflow": "2.21.0"
+}

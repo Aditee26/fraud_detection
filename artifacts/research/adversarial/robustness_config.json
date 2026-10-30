@@ -1,0 +1,15 @@
+{
+  "origin": "SYNTHETIC",
+  "note": "Perturbations are L-inf budgets in standardised feature space. For anonymised PCA features (V1..V28) they are mathematical robustness tests, not physically realisable transaction edits. No universal robustness is claimed.",
+  "immutable_features": [
+    "hour_sin",
+    "hour_cos"
+  ],
+  "train_eps": 0.1,
+  "pgd_steps": 10,
+  "adv_training_seconds": 8.486069727,
+  "n_test": 4000,
+  "n_test_fraud": 75,
+  "threshold_policy": "max-F1 on clean validation split, fixed under attack",
+  "all_constraints_satisfied": true
+}

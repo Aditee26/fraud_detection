@@ -1,0 +1,22 @@
+{
+  "origin": "SYNTHETIC",
+  "fusion_weights_on_logit": {
+    "ANN": 0.36744722890345716,
+    "XGBoost": 0.20300903629327352,
+    "LSTM": 0.23165109417004068,
+    "GraphSAGE": 0.23026473836595823
+  },
+  "fusion_intercept": 1.2898200881326518,
+  "fusion_train_rows": 7200,
+  "folds": 3,
+  "L": 8,
+  "max_neighbors": 8,
+  "causal_checks": {
+    "lstm_windows": true,
+    "graph_edges": true
+  },
+  "n_test": 3200,
+  "n_test_fraud": 64,
+  "graph": "account_id + device_id edges to earlier transactions (synthetic ids); NOT available in Kaggle data",
+  "caveat": "Base models used for validation/test were refit on the full train split, so their predictions are slightly stronger than the OOF predictions the meta-learner saw (standard stacking caveat)."
+}

@@ -1,0 +1,18 @@
+{
+  "name": "fraud-audit-contracts",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Local Hardhat workflow for contracts/FraudAudit.sol (in-process EVM only; no testnet deployment)",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "chai": "^4.3.7",
+    "ethers": "^6.4.0",
+    "hardhat": "^2.22.0",
+    "solc": "0.8.26"
+  }
+}

@@ -1,0 +1,108 @@
+{
+  "phase": "3 - SHAP explainability",
+  "model_explained": "XGBoost (artifacts/xgboost_model.json)",
+  "method": "shap.TreeExplainer (exact, not sampled)",
+  "note": "SHAP values explain what influenced the MODEL'S prediction. They are not proof that a transaction is fraudulent, and a feature can have a large positive SHAP value on a transaction that turns out to be legitimate.",
+  "global_explanation": {
+    "sample_size": 2000,
+    "base_value": 3.5478079319000244,
+    "base_value_meaning": "The model's average prediction (log-odds space) before any feature information is considered -- the starting point every transaction's SHAP values are added to.",
+    "top_features_by_mean_abs_shap": {
+      "V14": 2.5640816688537598,
+      "V4": 2.101576566696167,
+      "V12": 1.1180133819580078,
+      "V10": 0.9554764032363892,
+      "V8": 0.681283712387085,
+      "V11": 0.6432927250862122,
+      "V3": 0.6411914229393005,
+      "V1": 0.534134566783905,
+      "V18": 0.5198521614074707,
+      "Time": 0.5027256608009338,
+      "V26": 0.5015278458595276,
+      "Amount": 0.4895946681499481,
+      "V21": 0.48701944947242737,
+      "V16": 0.48078086972236633,
+      "V7": 0.47415244579315186
+    }
+  },
+  "local_explanation_example": {
+    "test_row_index": 37511,
+    "actual_class": "FRAUD",
+    "model_probability": 0.9999995231628418,
+    "base_value": 3.5478079319000244,
+    "top_contributing_features": [
+      {
+        "feature": "V14",
+        "scaled_value": -14.325254440307617,
+        "shap_value": 4.782386779785156,
+        "direction": "pushes toward FRAUD"
+      },
+      {
+        "feature": "V10",
+        "scaled_value": -11.788537979125977,
+        "shap_value": 1.6865160465240479,
+        "direction": "pushes toward FRAUD"
+      },
+      {
+        "feature": "V12",
+        "scaled_value": -13.112762451171875,
+        "shap_value": 1.616270661354065,
+        "direction": "pushes toward FRAUD"
+      },
+      {
+        "feature": "V4",
+        "scaled_value": 6.3036675453186035,
+        "shap_value": 1.595175862312317,
+        "direction": "pushes toward FRAUD"
+      },
+      {
+        "feature": "V16",
+        "scaled_value": -12.528822898864746,
+        "shap_value": 1.1717071533203125,
+        "direction": "pushes toward FRAUD"
+      },
+      {
+        "feature": "V3",
+        "scaled_value": -8.758285522460938,
+        "shap_value": 1.156948208808899,
+        "direction": "pushes toward FRAUD"
+      },
+      {
+        "feature": "V7",
+        "scaled_value": -10.257624626159668,
+        "shap_value": 0.9366677403450012,
+        "direction": "pushes toward FRAUD"
+      },
+      {
+        "feature": "V8",
+        "scaled_value": 5.629371643066406,
+        "shap_value": -0.6217080354690552,
+        "direction": "pushes toward LEGITIMATE"
+      },
+      {
+        "feature": "V17",
+        "scaled_value": -24.381874084472656,
+        "shap_value": 0.6119571328163147,
+        "direction": "pushes toward FRAUD"
+      },
+      {
+        "feature": "V21",
+        "scaled_value": 3.373027801513672,
+        "shap_value": 0.6072726845741272,
+        "direction": "pushes toward FRAUD"
+      },
+      {
+        "feature": "V11",
+        "scaled_value": 6.6590094566345215,
+        "shap_value": 0.4735356271266937,
+        "direction": "pushes toward FRAUD"
+      },
+      {
+        "feature": "V15",
+        "scaled_value": 1.0388948917388916,
+        "shap_value": -0.43234825134277344,
+        "direction": "pushes toward LEGITIMATE"
+      }
+    ]
+  }
+}
